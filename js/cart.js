@@ -30,6 +30,7 @@ const app = Vue.createApp ({
       cartData: {
         carts: []  // 14. 加入第二層 carts: [] html的清空購物車那邊就可以寫入它的結構了
       },
+      isLoading: false,
       // 13. 表單驗證格式
       form: {
         user: {
@@ -53,26 +54,34 @@ const app = Vue.createApp ({
     ErrorMessage: ErrorMessage,
   },
   methods: {
-    getProducts() {
+    isPhone(value) {
+      // cell: (^09|\+?8869)\d{2}(-?\d{3}-?\d{3})$
+      // phone: (((\+?(886)\d{1,2})|(^0\d{1,2}))-?)(\d{3,4}-?)(\d{4}-?)$
+      const phoneNum = /(^09|\+?8869)\d{2}(-?\d{3}-?\d{3})$/;
+      return phoneNum.test(value) ? true : '請輸入正確的手機號碼';
+    },
+    getProducts() {     
+      this.isLoading = true;      
       axios.get(`${apiUrl}/api/${apiPath}/products`)
-        .then(res => {
-          console.log(res);
+        .then(res => {      
+          this.isLoading = false;    
+          //console.log(res);
           //把產品列表存起來，準備呈現在畫面
           this.products = res.data.products;          
         });
     },
     // 2. 運用 $refs 直接操作內層的 openModal
-    openProductModal(id) { // 3. 傳入"內層"參數為產品的 id     
+    openProductModal(id) { // 3. 傳入"內層"參數為產品的 id       
       this.productId = id;
       // 2. 運用 $refs 取得 html 中 ref="productModal" 的元件
-      // 來操控 內層 openModal() 的方法
+      // 來操控 內層 openModal() 的方法      
       this.$refs.productModal.openModal();
     },
     // 5. 取得購物車內容
     getCart() {         
       axios.get(`${apiUrl}/api/${apiPath}/cart`)
         .then(res => {
-          console.log(res);          
+          //console.log(res);          
           this.cartData = res.data.data;          
         });
     },
@@ -86,7 +95,7 @@ const app = Vue.createApp ({
       this.isLoadingItem = id; // 6. 帶入讀取的id
       axios.post(`${apiUrl}/api/${apiPath}/cart`, {data}) // 5. 將資料格式帶入
         .then(res => {
-          console.log(res);   
+          //console.log(res);   
           // 5. 加入購物車後，再重新取得購物車內容
           this.getCart();    
           // 12. 從內層 modal 新增數量後關閉
@@ -98,10 +107,11 @@ const app = Vue.createApp ({
     },
     // 8. 刪除品項
     removeCartItem(id) {
-      this.isLoadingItem = id;
+
+      this.isLoadingItem = id;      
       axios.delete(`${apiUrl}/api/${apiPath}/cart/${id}`) // 5. 將資料格式帶入
         .then(res => {
-          console.log(res);   
+          //console.log(res);   
           // 8. 刪除購物車後，再重新取得購物車內容
           this.getCart();       
           // 8. 讀取完後，清空id
@@ -116,8 +126,8 @@ const app = Vue.createApp ({
       }
       this.isLoadingItem = item.id; // 10. 帶入讀取的id
       axios.put(`${apiUrl}/api/${apiPath}/cart/${item.id}`, {data}) // 10. 將資料格式帶入
-        .then(res => {
-          console.log(res);   
+        .then((res) => {
+          //console.log(res);   
           // 10. 更新購物車後，再重新取得購物車內容
           this.getCart();       
           // 10. 讀取完後，清空id
@@ -126,9 +136,11 @@ const app = Vue.createApp ({
 
     },
     // 14. 刪除購物車內容
-    delAllCarts() {                    
+    delAllCarts() {    
+      this.isLoading = true;                
       axios.delete(`${apiUrl}/api/${apiPath}/carts`)
         .then((res) => {
+          this.isLoading = false;
           this.getCart();
         });     
     },
@@ -137,6 +149,8 @@ const app = Vue.createApp ({
       const order = this.form;                  
       axios.post(`${apiUrl}/api/${apiPath}/order`, { data: order })
         .then((res) => {
+          //console.log(res.data.message)
+          alert(res.data.message)
           // 15. 當表單送出時，清空資料，resetForm()是 VeeValidate 提供的函式
           this.$refs.form.resetForm(); 
           this.getCart();
@@ -165,7 +179,7 @@ app.component('product-modal', {
     return {
       modal: {}, // 2. 定義一個 modal 的資料變數
       product: {}, // 4. 存入單一筆遠端資料
-      qty: 1, // 11. modal中加入購物車的數量
+      qty: 1, // 11. modal中加入購物車的數量      
     };
   },  
   // 4. 利用 watch 監控 props: ['id']，當 id 觸發時 getProduct() 取得遠端資料
@@ -173,6 +187,7 @@ app.component('product-modal', {
   watch: {
     id() {
       //console.log(this.id);
+      this.product = {};
       this.getProduct();
     },
   },
@@ -187,7 +202,7 @@ app.component('product-modal', {
     },
 
     // 4. 在元件內取得遠端資料
-    getProduct() {          
+    getProduct() {   
       axios.get(`${apiUrl}/api/${apiPath}/product/${this.id}`)
         .then((res) => {
           //console.log(res);      
@@ -201,5 +216,5 @@ app.component('product-modal', {
   },
   
 });
-
+app.component('Loading', VueLoading.Component);
 app.mount('#app');

@@ -17,6 +17,10 @@
       integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
       crossorigin="anonymous"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/vue-loading-overlay@5.0.2/dist/vue-loading.css"
+    />
   </head>
 
   <body>
@@ -32,7 +36,9 @@
             @add-cart="addCart"
           ></product-modal>
           <!-- 產品Modal -->
-
+          <!-- vue-loading-overlay -->
+          <loading v-model:active="isLoading"></loading>
+          <!-- vue-loading-overlay -->
           <table class="table align-middle">
             <thead>
               <tr>
@@ -246,7 +252,7 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors['電話'] }"
                 placeholder="請輸入電話"
-                rules="required|min:8|max:10"
+                :rules="isPhone"
                 v-model="form.user.tel"
               ></v-field>
               <error-message
@@ -370,6 +376,8 @@
     <script src="https://unpkg.com/vee-validate@next"></script>
     <script src="https://unpkg.com/@vee-validate/i18n@4.1.0"></script>
     <script src="https://unpkg.com/@vee-validate/rules"></script>
+    <!-- vue-loading-overlay -要放在vue cdn之後 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue-loading-overlay@5.0.2/dist/vue-loading.min.js"></script>
     <script src="./js/cart.js" type="module"></script>
   </body>
 </html>
